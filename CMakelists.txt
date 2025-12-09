@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.13)
+
+project(main1)
+
+set(CMAKE_CXX_STANDARD_11)
+
+add_subdirectory("dependencies/raylib")
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebug$<$<CONFIG:Debug>:Debug>") # Links cruntime library statically
+#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
+
+
+
+file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*cpp")
+
+add_executable(main1 ${MY_SOURCES})
+
+target_include_directories(main1 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/include/")
+target_link_libraries(main1 PRIVATE raylib)
