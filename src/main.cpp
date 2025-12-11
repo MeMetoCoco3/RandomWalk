@@ -146,20 +146,29 @@ int main(int argc, const char** argv)
 	}
 	
 	bool Running = true;
+	u8 CLEAN = 0;
 	while (Running)
 	{
 		if (IsKeyPressed(KEY_ESCAPE)) Running = false;
 
+
+		if (IsKeyPressed(KEY_C)){
+			CLEAN = 2;
+		}
 		UpdateAgents(Agents);
 
 		BeginDrawing();
-
-			if (IsKeyReleased(KEY_C)) 
-			{
-				ClearBackground({ 1, 1, 1, 1 });
-			}
-
+		if (!CLEAN)
+		{
 			for (auto& a : Agents) DrawRectangleRec(a.Rect, a.Color);
+		}
+		else
+		{
+			ClearBackground({ 1, 1, 1, 1 });
+			CLEAN--;
+		}
+			
+
 		EndDrawing();
 
 	}
