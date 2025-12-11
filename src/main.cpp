@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include "vmath.h"
 #include <array>
-constexpr auto WIDTH = 400;
-constexpr auto HEIGHT = 400;
+constexpr auto WIDTH = 1000;
+constexpr auto HEIGHT = 1000;
 
 constexpr auto RECT_SIZE = 6;
 constexpr auto SPEED = 0.4;
@@ -42,14 +42,20 @@ enum e_DIRECTION_MODE {
 };
 
 e_DIRECTION_MODE resolve_argument(std::string arg);
+void UpdateAgents(std::vector<Agent>& Agents);
+
+int NUM_AGENTS = 50;
+int Size = 4;
+std::array<vec2, 8> Directions{ {} };
+std::random_device rd;
+std::mt19937 mt(rd());
+std::uniform_int_distribution<int>distrib(0, 20);
+
+
 int main(int argc, const char** argv)
 {
 	// DEFAULTS
-	int NUM_AGENTS = 50;
 	e_DIRECTION_MODE DMODE = NORMAL_DIR;
-
-	std::array<vec2, 8> Directions{ {} };
-	int Size = 4;
 
 	if (argc == 2)
 	{
@@ -122,13 +128,6 @@ int main(int argc, const char** argv)
 		}break;
 	}
 
-
-	
-	
-	std::random_device rd;
-	std::mt19937 mt(rd());
-	std::uniform_int_distribution<int>distrib(0, 20);
-
 	SetTraceLogLevel(LOG_NONE);
 	InitWindow(WIDTH, HEIGHT, "random_walk");
 	SetTargetFPS(200);
@@ -151,36 +150,15 @@ int main(int argc, const char** argv)
 	{
 		if (IsKeyPressed(KEY_ESCAPE)) Running = false;
 
+		UpdateAgents(Agents);
 
-		for (auto& a : Agents)
-		{
-			vec2 DistanceMoved = vec2_times_scalar(a.Direction, a.Speed);
-			a.DistanceSinceTurn += VectorLength(DistanceMoved);
-			if (a.DistanceSinceTurn >= MAX_DISTANCE_BEFORE_TURNING)
-			{
-				f32 Excess = a.DistanceSinceTurn - MAX_DISTANCE_BEFORE_TURNING;
-				f32 Rest = VectorLength(DistanceMoved) - Excess;
-				vec2 RestDirection = vec2_times_scalar(a.Direction, Rest);
-
-				a.Rect.x += RestDirection.x;
-				a.Rect.y += RestDirection.y;
-				vec2 PrevDirection = a.Direction;
-				while (true)
-				{
-					a.Direction = Directions[distrib(mt)%Size];
-					f32 Delta = VectorLength(add_vec2(a.Direction, PrevDirection));
-					if (Delta != 0) break;
-				}
-
-				DistanceMoved = vec2_times_scalar(a.Direction, Excess);
-				a.DistanceSinceTurn = Excess;
-			}
-			
-			a.Rect.x += DistanceMoved.x;
-			a.Rect.y += DistanceMoved.y;
-			
-		}
 		BeginDrawing();
+
+			if (IsKeyReleased(KEY_C)) 
+			{
+				ClearBackground({ 1, 1, 1, 1 });
+			}
+
 			for (auto& a : Agents) DrawRectangleRec(a.Rect, a.Color);
 		EndDrawing();
 
@@ -189,6 +167,38 @@ int main(int argc, const char** argv)
 	return 0;
 }
 
+
+void UpdateAgents(std::vector<Agent>& Agents)
+{
+	for (auto& a : Agents)
+	{
+		vec2 DistanceMoved = vec2_times_scalar(a.Direction, a.Speed);
+		a.DistanceSinceTurn += VectorLength(DistanceMoved);
+		if (a.DistanceSinceTurn >= MAX_DISTANCE_BEFORE_TURNING)
+		{
+			f32 Excess = a.DistanceSinceTurn - MAX_DISTANCE_BEFORE_TURNING;
+			f32 Rest = VectorLength(DistanceMoved) - Excess;
+			vec2 RestDirection = vec2_times_scalar(a.Direction, Rest);
+
+			a.Rect.x += RestDirection.x;
+			a.Rect.y += RestDirection.y;
+			vec2 PrevDirection = a.Direction;
+			while (true)
+			{
+				a.Direction = Directions[distrib(mt)%Size];
+				f32 Delta = VectorLength(add_vec2(a.Direction, PrevDirection));
+				if (Delta != 0) break;
+			}
+
+			DistanceMoved = vec2_times_scalar(a.Direction, Excess);
+			a.DistanceSinceTurn = Excess;
+		}
+		
+		a.Rect.x += DistanceMoved.x;
+		a.Rect.y += DistanceMoved.y;
+		
+	}
+}
 
 e_DIRECTION_MODE resolve_argument(std::string arg)
 {
